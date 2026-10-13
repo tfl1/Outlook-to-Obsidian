@@ -3,36 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Outlook to Obsidian (Test)</title>
+  <title>Outlook to Obsidian</title>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <style>
-    body { font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; margin: 12px; color: #222; background: #fff; }
-    h1 { font-size: 15px; margin: 0 0 10px; }
-    label { display: block; font-weight: 600; margin: 10px 0 4px; }
-    input { width: 100%; box-sizing: border-box; padding: 6px; font-family: Consolas, monospace; font-size: 12px; }
-    button { margin-top: 10px; padding: 6px 12px; cursor: pointer; }
-    .box { margin-top: 12px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; }
-    .ok { color: #0a6b2d; font-weight: 600; }
-    .err { color: #b00020; font-weight: 600; white-space: pre-wrap; }
-    ul { margin: 6px 0 0; padding-left: 18px; }
-    .muted { color: #666; }
+    :root { --accent: #7c3aed; --accent-soft: #f1ebfd; --border: #d6d6d6; --muted: #666; --err: #b00020; --ok: #0a6b2d; }
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; margin: 0; padding: 12px; color: #1f1f1f; background: #fff; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+    #subject { font-weight: 600; font-size: 14px; word-break: break-word; }
+    #meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    input[type=text], input[type=password] { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font: inherit; }
+    input[type=text]:focus, input[type=password]:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+    .row { display: flex; gap: 6px; align-items: center; }
+    .row input { flex: 1; }
+    #folders { border: 1px solid var(--border); border-radius: 4px; margin-top: 6px; max-height: 220px; overflow-y: auto; }
+    .group { font-size: 11px; color: var(--muted); padding: 4px 8px; background: #fafafa; border-bottom: 1px solid #eee; position: sticky; top: 0; }
+    .folder { padding: 4px 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid #f3f3f3; }
+    .folder:hover { background: #f5f5f5; }
+    .folder.sel { background: var(--accent-soft); font-weight: 600; }
+    .folder .parent { color: var(--muted); }
+    .empty { padding: 8px; color: var(--muted); }
+    #chosen { margin-top: 6px; font-size: 12px; }
+    #chosen b { color: var(--accent); word-break: break-word; }
+    label.check { display: flex; gap: 6px; align-items: center; margin: 6px 0; cursor: pointer; }
+    button { font: inherit; padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+    button:hover:not(:disabled) { background: #f5f5f5; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; width: 100%; padding: 8px; margin-top: 10px; }
+    button.primary:hover:not(:disabled) { background: #6d28d9; }
+    button:disabled { opacity: .5; cursor: default; }
+    button.icon { padding: 5px 9px; }
+    #status { margin-top: 10px; padding: 8px; border-radius: 4px; display: none; white-space: pre-wrap; word-break: break-word; }
+    #status.ok { display: block; background: #e8f5ec; color: var(--ok); }
+    #status.err { display: block; background: #fdecee; color: var(--err); }
+    #status.busy { display: block; background: #f5f5f5; color: #333; }
+    details { margin-top: 16px; border-top: 1px solid #eee; padding-top: 8px; }
+    summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+    .hint { color: var(--muted); font-size: 12px; margin: 4px 0; }
   </style>
 </head>
 <body>
-  <h1>Outlook → Obsidian: connection test</h1>
+  <div id="subject">Select an email…</div>
+  <div id="meta"></div>
 
-  <div class="box">
-    <div class="muted">Selected email:</div>
-    <div id="subject">(loading…)</div>
+  <h2>Save to folder</h2>
+  <div class="row">
+    <input id="filter" type="text" placeholder="Type to filter folders" autocomplete="off">
+    <button id="refresh" class="icon" title="Reload folder list">↻</button>
   </div>
+  <div id="folders"><div class="empty">Loading folders…</div></div>
+  <div id="chosen">No folder selected.</div>
 
-  <label for="apikey">Local REST API key</label>
-  <input id="apikey" type="password" autocomplete="off" placeholder="Paste the key from Obsidian settings">
-  <button id="save">Save key</button>
-  <button id="test">Test connection</button>
+  <h2>Tags</h2>
+  <input id="tags" type="text" placeholder="e.g. budget, fy27" autocomplete="off">
 
-  <div id="result" class="box">Not run yet.</div>
+  <label class="check"><input id="keepRemote" type="checkbox"> Keep remote images</label>
 
-  <script src="taskpane.js"></script>
+  <button id="save" class="primary" disabled>Save to Obsidian</button>
+  <div id="status"></div>
+
+  <details id="settings">
+    <summary>Settings</summary>
+    <h2>Local REST API key</h2>
+    <div class="row">
+      <input id="apikey" type="password" autocomplete="off" placeholder="Paste key from Obsidian settings">
+      <button id="saveKey">Save</button>
+    </div>
+    <h2>Defaults</h2>
+    <label class="check"><input id="defKeepRemote" type="checkbox"> Keep remote images by default</label>
+    <label class="check"><input id="defOpenAfter" type="checkbox"> Open the note in Obsidian after saving</label>
+    <p class="hint">Default changes are saved immediately.</p>
+  </details>
+
+  <script type="module" src="taskpane.js"></script>
 </body>
 </html>
