@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Outlook to Obsidian (Test)</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <style>
+    body { font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; margin: 12px; color: #222; background: #fff; }
+    h1 { font-size: 15px; margin: 0 0 10px; }
+    label { display: block; font-weight: 600; margin: 10px 0 4px; }
+    input { width: 100%; box-sizing: border-box; padding: 6px; font-family: Consolas, monospace; font-size: 12px; }
+    button { margin-top: 10px; padding: 6px 12px; cursor: pointer; }
+    .box { margin-top: 12px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; }
+    .ok { color: #0a6b2d; font-weight: 600; }
+    .err { color: #b00020; font-weight: 600; white-space: pre-wrap; }
+    ul { margin: 6px 0 0; padding-left: 18px; }
+    .muted { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Outlook → Obsidian: connection test</h1>
+
+  <div class="box">
+    <div class="muted">Selected email:</div>
+    <div id="subject">(loading…)</div>
+  </div>
+
+  <label for="apikey">Local REST API key</label>
+  <input id="apikey" type="password" autocomplete="off" placeholder="Paste the key from Obsidian settings">
+  <button id="save">Save key</button>
+  <button id="test">Test connection</button>
+
+  <div id="result" class="box">Not run yet.</div>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>
