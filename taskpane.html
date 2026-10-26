@@ -39,6 +39,7 @@
     details { margin-top: 16px; border-top: 1px solid #eee; padding-top: 8px; }
     summary { cursor: pointer; color: var(--muted); font-weight: 600; }
     .hint { color: var(--muted); font-size: 12px; margin: 4px 0; }
+    #namePreview { word-break: break-word; }
   </style>
 </head>
 <body>
@@ -52,6 +53,10 @@
   </div>
   <div id="folders"><div class="empty">Loading folders…</div></div>
   <div id="chosen">No folder selected.</div>
+
+  <h2>Note name</h2>
+  <input id="noteName" type="text" autocomplete="off" spellcheck="true">
+  <div id="namePreview" class="hint"></div>
 
   <h2>Tags</h2>
   <input id="tags" type="text" placeholder="e.g. budget, fy27" autocomplete="off">

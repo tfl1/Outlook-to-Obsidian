@@ -237,10 +237,30 @@ async function readViaOfficeJs(item) {
   return { html, text: "", date: null, attachments };
 }
 
+// ---------- note name ----------
+/** Date used in the file name prefix (when the email arrived). */
+function fileDate(item) {
+  const d = item && item.dateTimeCreated ? new Date(item.dateTimeCreated) : new Date();
+  return isNaN(d) ? new Date() : d;
+}
+
+/** File base name (no extension) from the Note name box; falls back to the subject. */
+function noteBase(item) {
+  const typed = $("noteName").value.trim() || (item && item.subject) || "No subject";
+  const day = ymd(fileDate(item));
+  return sanitizeFilename(`${day} ${typed}`) || day;
+}
+
+function updateNamePreview() {
+  const item = Office.context.mailbox.item;
+  $("namePreview").textContent = item ? `Saves as: ${noteBase(item)}.md` : "";
+}
+
 // ---------- save ----------
 async function save() {
   const item = Office.context.mailbox.item;
   if (!item || selectedFolder === null) return;
+  const chosenBase = noteBase(item); // capture now, before any awaits
   busy = true; updateSaveButton();
   try {
     status("busy", "Reading email…");
@@ -272,7 +292,7 @@ async function save() {
     const takenNotes = new Set(folderEntries.filter(e => !e.endsWith("/")).map(e => e.toLowerCase()));
     const takenAtt = new Set(attEntries.filter(e => !e.endsWith("/")).map(e => e.toLowerCase()));
 
-    let base = sanitizeFilename(`${ymd(meta.date)} ${meta.subject}`) || ymd(meta.date);
+    let base = chosenBase;
     // Pick a base name free for both the note and its HTML copy.
     let candidate = base;
     for (let i = 2; takenNotes.has((candidate + ".md").toLowerCase()) || takenAtt.has((candidate + ".html").toLowerCase()); i++) {
@@ -325,10 +345,14 @@ function showItem() {
   if (!item) {
     $("subject").textContent = "Select an email…";
     $("meta").textContent = "";
+    $("noteName").value = "";
   } else {
     $("subject").textContent = item.subject || "(no subject)";
     $("meta").textContent = formatAddr(item.from) || "";
+    $("noteName").value = item.subject || "";
   }
+  $("noteName").placeholder = item && item.subject ? item.subject : "Note name";
+  updateNamePreview();
   updateSaveButton();
 }
 
@@ -356,6 +380,8 @@ Office.onReady(() => {
     } catch (e) { status("err", e.message); }
   };
 
+  $("noteName").oninput = updateNamePreview;
+  $("noteName").onfocus = e => e.target.select();
   $("filter").oninput = renderFolders;
   $("refresh").onclick = loadFolders;
   $("save").onclick = save;
