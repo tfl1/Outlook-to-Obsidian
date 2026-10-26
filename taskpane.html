@@ -10,8 +10,9 @@
     * { box-sizing: border-box; }
     body { font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; margin: 0; padding: 12px; color: #1f1f1f; background: #fff; }
     h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
-    #subject { font-weight: 600; font-size: 14px; word-break: break-word; }
-    #meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    h2.first { margin-top: 0; }
+    #noteName { font-weight: 600; font-size: 14px; }
+    #meta { color: var(--muted); font-size: 12px; margin-top: 2px; word-break: break-word; }
     input[type=text], input[type=password] { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font: inherit; }
     input[type=text]:focus, input[type=password]:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
     .row { display: flex; gap: 6px; align-items: center; }
@@ -43,7 +44,9 @@
   </style>
 </head>
 <body>
-  <div id="subject">Select an email…</div>
+  <h2 class="first">Note name</h2>
+  <input id="noteName" type="text" autocomplete="off" spellcheck="true" placeholder="Select an email…">
+  <div id="namePreview" class="hint"></div>
   <div id="meta"></div>
 
   <h2>Save to folder</h2>
@@ -53,10 +56,6 @@
   </div>
   <div id="folders"><div class="empty">Loading folders…</div></div>
   <div id="chosen">No folder selected.</div>
-
-  <h2>Note name</h2>
-  <input id="noteName" type="text" autocomplete="off" spellcheck="true">
-  <div id="namePreview" class="hint"></div>
 
   <h2>Tags</h2>
   <input id="tags" type="text" placeholder="e.g. budget, fy27" autocomplete="off">
@@ -79,6 +78,7 @@
     <p class="hint">Default changes are saved immediately.</p>
   </details>
 
-  <script type="module" src="taskpane.js"></script>
+  <!-- Bump ?v= with every release so Outlook can't pair new HTML with a cached old script. -->
+  <script type="module" src="taskpane.js?v=1.2"></script>
 </body>
 </html>

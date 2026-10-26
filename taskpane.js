@@ -343,15 +343,15 @@ function showItem() {
   $("tags").value = "";
   $("keepRemote").checked = getSetting(K.keepRemote, true);
   if (!item) {
-    $("subject").textContent = "Select an email…";
     $("meta").textContent = "";
     $("noteName").value = "";
+    $("noteName").placeholder = "Select an email…";
   } else {
-    $("subject").textContent = item.subject || "(no subject)";
-    $("meta").textContent = formatAddr(item.from) || "";
+    const from = formatAddr(item.from);
+    $("meta").textContent = from ? `From: ${from}` : "";
     $("noteName").value = item.subject || "";
+    $("noteName").placeholder = item.subject || "No subject";
   }
-  $("noteName").placeholder = item && item.subject ? item.subject : "Note name";
   updateNamePreview();
   updateSaveButton();
 }
